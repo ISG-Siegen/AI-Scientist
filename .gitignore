@@ -1,3 +1,10 @@
+# Ignore change for the provided templates, as we want to do our own stuff (for now)
+templates/2d_diffusion/
+templates/grokking/
+
+# Ignore results, they are in onedrive
+results/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

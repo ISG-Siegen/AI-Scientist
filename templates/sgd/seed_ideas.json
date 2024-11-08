@@ -1,0 +1,18 @@
+[
+  {
+    "Name": "e_fold_cv",
+    "Title": "E-Fold Cross-Validation for Model Performance Estimation",
+    "Experiment": "Develop an alternative to k-fold cross-validation named e-fold cross-validation. Instead of a static k it uses an intelligently chosen or dynamically adjusted paramter e to optimize the number of folds and to minimize computational energy while maintaining reliable model performance estimates.",
+    "Interestingness": 8,
+    "Feasibility": 7,
+    "Novelty": 7
+  },
+  {
+    "Name": "adaptive_lr_sgd",
+    "Title": "Adaptive Learning Rate Techniques for SGD in Matrix Factorization",
+    "Experiment": "Explore adaptive learning rate strategies, such as learning rate schedules or techniques like AdaGrad and RMSprop, to enhance the efficiency of SGD during matrix factorization, aiming for faster convergence and reduced energy consumption.",
+    "Interestingness": 8,
+    "Feasibility": 7,
+    "Novelty": 6
+  }
+]
