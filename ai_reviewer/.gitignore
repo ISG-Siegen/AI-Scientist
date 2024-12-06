@@ -1,0 +1,6 @@
+
+# Ignore everything (pdfs, review.txt files, etc.) except the papers.csv and the file you are looking at right know.
+
+/*
+!/.gitignore
+!/papers.csv

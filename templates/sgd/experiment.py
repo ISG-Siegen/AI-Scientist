@@ -1,3 +1,18 @@
+"""
+============================================================
+Filename: experiment.py
+Author: Moritz Baumgart
+Affiliation: University of Siegen, Intelligent Systems Group (ISG)
+Date: December, 2024
+============================================================
+
+Description:
+This file is part of the `sgd` template for use with the AI scientist ('AI-S'), https://github.com/SakanaAI/AI-Scientist.
+It implements a collaborative filtering model using stochastic gradient descent (SGD) for matrix factorization and the 
+necessary auxiliary code (loading data, preprocessing, etc.) to enable AI-S to run the experiment.
+============================================================
+"""
+
 from argparse import ArgumentParser
 import json
 from math import sqrt
@@ -18,6 +33,24 @@ def update_parameters(
     learning_rate,
     regularization_rate,
 ):
+    """
+    Update the model parameters (biases and latent factors) for each interaction in the training set.
+
+    Args:
+        train (numpy.ndarray): The training dataset containing user-item-rating triples.
+        bias_user (numpy.ndarray): The user bias vector.
+        bias_item (numpy.ndarray): The item bias vector.
+        factors_user (numpy.ndarray): The user latent factor matrix.
+        factors_item (numpy.ndarray): The item latent factor matrix.
+        global_mean (float): The global average rating.
+        n_factors (int): The number of latent factors.
+        learning_rate (float): The learning rate for gradient descent.
+        regularization_rate (float): The regularization rate to prevent overfitting.
+
+    Returns:
+        Tuple: Updated bias_user, bias_item, factors_user, and factors_item.
+    """
+
     # update parameters for each interaction
     for i in range(train.shape[0]):
         # obtain interaction
@@ -61,7 +94,22 @@ def update_parameters(
 def validation_loss(
     validation, bias_user, bias_item, factors_user, factors_item, global_mean, n_factors
 ):
-    # collect errors
+    """
+    Calculate the validation loss, RMSE, and MAE for the model.
+
+    Args:
+        validation (numpy.ndarray): The validation dataset containing user-item-rating triples.
+        bias_user (numpy.ndarray): The user bias vector.
+        bias_item (numpy.ndarray): The item bias vector.
+        factors_user (numpy.ndarray): The user latent factor matrix.
+        factors_item (numpy.ndarray): The item latent factor matrix.
+        global_mean (float): The global average rating.
+        n_factors (int): The number of latent factors.
+
+    Returns:
+        Tuple: Validation loss, RMSE, and MAE.
+    """
+
     residuals = []
 
     # evaluate each validation interaction
@@ -88,14 +136,12 @@ def validation_loss(
 
     # transform list of errors to numpy array
     residuals = np.array(residuals)
-    # calculate l2 loss
+
+    # calculate l2 loss, rmse, mae
     loss = np.square(residuals).mean()
-    # calculate RMSE
     rmse = np.sqrt(loss)
-    # calculate MAE
     mae = np.absolute(residuals).mean()
 
-    # return metrics
     return loss, rmse, mae
 
 
@@ -108,6 +154,7 @@ def obtain_mapping(data: pd.DataFrame):
     Returns:
         dict: A dict that represents the mapping from original to new ids
     """
+
     # get the list of unique users and items
     user_ids = data["user"].unique().tolist()
     item_ids = data["item"].unique().tolist()
@@ -133,6 +180,22 @@ def sgd(
     regularization_rate=0.01,
     early_stopping_delta=0.1,
 ):
+    """
+    Perform stochastic gradient descent for matrix factorization.
+
+    Args:
+        train (numpy.ndarray): The training dataset.
+        validation (numpy.ndarray): The validation dataset.
+        n_epochs (int): The number of epochs to train the model.
+        n_factors (int): The number of latent factors.
+        learning_rate (float): The learning rate for gradient descent.
+        regularization_rate (float): The regularization rate to prevent overfitting.
+        early_stopping_delta (float): The delta value for early stopping based on validation loss.
+
+    Returns:
+        Tuple: The global mean, bias vectors, factor matrices, and training metrics.
+    """
+
     # dataframe that contains the metrics for each epoch
     metrics = pd.DataFrame(
         np.zeros((n_epochs, 3), dtype=float), columns=["Loss", "RMSE", "MAE"]
@@ -203,6 +266,25 @@ def predict(
     min_rating,
     max_rating,
 ):
+    """
+    Generate predictions for the test dataset using the trained model.
+
+    Args:
+        test (pd.DataFrame): The test dataset containing user-item pairs.
+        global_mean (float): The global average rating.
+        user_mapping (dict): A mapping of original user ids to consecutive ids.
+        item_mapping (dict): A mapping of original item ids to consecutive ids.
+        bu (numpy.ndarray): The user bias vector.
+        bi (numpy.ndarray): The item bias vector.
+        pu (numpy.ndarray): The user latent factor matrix.
+        qi (numpy.ndarray): The item latent factor matrix.
+        min_rating (float): The minimum rating in the dataset.
+        max_rating (float): The maximum rating in the dataset.
+
+    Returns:
+        list: A list of predicted ratings for each user-item pair in the test set.
+    """
+
     predictions = []
     # make predictions for each interaction in the test set
     for u_id, i_id in zip(test["user"], test["item"]):
@@ -228,6 +310,18 @@ def predict(
 
 
 def preprocess(data, user_mapping, item_mapping):
+    """
+    Preprocess the dataset by mapping user and item ids to consecutive integers.
+
+    Args:
+        data (pd.DataFrame): The dataset containing user-item interactions.
+        user_mapping (dict): A mapping of original user ids to new integer ids.
+        item_mapping (dict): A mapping of original item ids to new integer ids.
+
+    Returns:
+        numpy.ndarray: The preprocessed dataset with mapped user and item ids.
+    """
+
     # make a copy to avoid modifying the original data
     data = data.copy()
 
@@ -247,6 +341,17 @@ def preprocess(data, user_mapping, item_mapping):
 
 
 def rmse(x, y):
+    """
+    Calculate the Root Mean Squared Error (RMSE) between two arrays.
+
+    Args:
+        x (list): The true ratings.
+        y (list): The predicted ratings.
+
+    Returns:
+        float: The RMSE between the true and predicted ratings.
+    """
+
     if len(x) != len(y):
         raise ValueError("Cannot compute RMSE on differently sized arrays!")
 
@@ -258,6 +363,21 @@ def rmse(x, y):
 
 
 def main() -> None:
+    """
+    The main entry point for running the experiment.
+
+    This function parses command-line arguments, loads and preprocesses data,
+    performs training using stochastic gradient descent, generates predictions, 
+    evaluates the model, and saves the results to output files.
+
+    Command-Line Arguments:
+        --out_dir (str): Output directory for storing the results. Default is "run_0".
+
+    Output:
+        Two JSON files:
+            - `all_results.json`: Contains the model parameters and evaluation metrics.
+            - `final_info.json`: Contains summary statistics of the evaluation metrics.
+    """
 
     parser = ArgumentParser(description="Run experiment")
     parser.add_argument("--out_dir", type=str, default="run_0", help="Output directory")

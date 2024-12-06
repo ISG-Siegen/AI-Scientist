@@ -8,7 +8,7 @@ Date: December, 2024
 
 Description:
 This file is part of the `knn` template for use with the AI scientist ('AI-S'), https://github.com/SakanaAI/AI-Scientist.
-It uses the all_results.json dropped by experiment.py and matplotlib to generate plots for that AI-S can then embed in its final writeup/paper.
+It uses the final_info.json dropped by experiment.py and matplotlib to generate plots for that AI-S can then embed in its final writeup/paper.
 ============================================================
 """
 
@@ -27,14 +27,11 @@ plot_data = {}
 for run_dir in run_dirs:
     run_dir_path = results_dir / run_dir
 
-    with open(run_dir_path / "all_results.json", "r") as f:
-        final_results = json.load(f)
-
+    with open(run_dir_path / "final_info.json", "r") as f:
+        final_results: dict = json.load(f)
         plot_data[run_dir] = {
-            "metrics": final_results["metrics"],
-            "test_rmse": final_results["test_rmse"],
+            ds: final_results[ds]["means"] for ds in final_results.keys()
         }
-
 
 # ADD RUNS HERE THAT WILL BE PLOTTED
 runs = [
@@ -43,20 +40,12 @@ runs = [
 
 for run in runs:
     plt.figure(figsize=(10, 6))
-    plt.plot(
-        plot_data[run]["metrics"]["Loss"].values(), label="Validation Loss", color="r"
-    )
-    plt.plot(
-        plot_data[run]["metrics"]["RMSE"].values(), label="Validation RMSE", color="b"
-    )
-    plt.plot(
-        plot_data[run]["metrics"]["MAE"].values(), label="Validation MAE", color="g"
-    )
 
-    plt.axhline(plot_data[run]["test_rmse"], label="Test RMSE", color="y")
+    for dataset, scores in plot_data[run].items():
+        plt.bar(scores.keys(), scores.values(), label=dataset)
 
-    plt.title(f"Validation Loss, RMSE and MAE Across Epochs for {run}")
-    plt.xlabel("Epoch")
+    plt.title(f"Scores for {run}")
+    plt.xlabel("Metric")
     plt.legend()
     plt.grid(True, which="both", ls="-", alpha=0.2)
     plt.tight_layout()
