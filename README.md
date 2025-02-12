@@ -1,3 +1,17 @@
+### ⚠️ Notice ⚠️
+This repository is a **fork** of the [original project](https://github.com/SakanaAI/AI-Scientist) by SakanaAI.
+
+This fork has some changes to make it work with [our own project](https://github.com/ISG-Siegen/the-ai-scientist-reproduced).
+
+For the latest updates and improvements, please check the original repository.
+
+---
+*Original README below:*
+<br>
+<br>
+<br>
+
+
 <h1 align="center">
   <a href="https://github.com/SakanaAI/AI-Scientist/blob/main/docs/logo_2.png">
     <img src="docs/logo_2.png" width="215" /></a><br>
